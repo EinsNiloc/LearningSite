@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LearningSite</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #000000;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+#matrix-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.mouse-focus {
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(119, 191, 255, 0.15) 0%, rgba(119, 191, 255, 0) 70%);
+    pointer-events: none;
+    z-index: -1;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.glass-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    padding-top: 120px; /* Platz für die feste Navbar */
+    padding-bottom: 80px; /* Platz für den Footer */
+}
+
+.main-content {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 40px;
+    width: 90%;
+    max-width: 1000px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    transition: all 0.5s ease;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+h1 {
+    font-size: 2.8rem;
+    margin-bottom: 20px;
+    color: #77bfff;
+}
+
+h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #77bfff;
+}
+
+p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    color: #e0f7ff;
+}
+
+/* NAVBAR - feste Position oben in der Mitte */
+.navbar {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1000px;
+    height: 70px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.nav-logo {
+    height: 40px;
+    width: auto;
+}
+
+.nav-brand {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #77bfff;
+}
+
+.nav-right {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-btn {
+    color: #77bfff;
+    text-decoration: none;
+    font-size: 1.1rem;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: background 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px);
+}
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* Lernübungen */
+.exercises-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+    width: 100%;
+}
+
+.exercise-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+    transition: all 0.4s ease;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.exercise-item:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.exercise-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    background-color: rgba(119, 191, 255, 0.1);
+}
+
+.exercise-title {
+    font-size: 1.3rem;
+    color: #77bfff;
+    margin-bottom: 10px;
+}
+
+.exercise-description {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #e0f7ff;
+    flex-grow: 1;
+    margin-bottom: 15px;
+}
+
+.exercise-link {
+    font-size: 0.9rem;
+    color: #8ac6d8;
+    margin-top: auto;
+    font-style: italic;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    font-size: 1.2rem;
+    color: #77bfff;
+    grid-column: 1 / -1;
+}
+
+/* Über mich Seite */
+.about-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 30px;
+}
+
+.about-member {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 30px;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    transition: all 0.4s ease;
+}
+
+.about-member:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.member-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #77bfff;
+    margin-bottom: 20px;
+}
+
+.member-role {
+    font-weight: bold;
+    color: #77bfff;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.member-age {
+    font-style: italic;
+    color: #a5d8ff;
+    margin-bottom: 20px;
+}
+
+.member-description {
+    text-align: left;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.skills-section {
+    text-align: left;
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.skills-title {
+    font-size: 1.2rem;
+    color: #77bfff;
+    margin-bottom: 15px;
+}
+
+.skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.skill-tag {
+    background: rgba(119, 191, 255, 0.2);
+    color: #77bfff;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(119, 191, 255, 0.3);
+}
+
+/* FOOTER */
+.footer {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    color: #77bfff;
+    padding: 30px 0;
+    margin-top: 40px;
+    font-size: 0.9rem;
+    z-index: 4;
+}
+
+.footer-content {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 20px;
+    width: 90%;
+    max-width: 1000px;
+    margin: 0 auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar {
+        width: 95%;
+        padding: 0 15px;
+        top: 15px;
+    }
+    
+    .nav-brand {
+        display: block;
+    }
+    
+    .nav-right {
+        gap: 10px;
+    }
+    
+    .nav-btn {
+        padding: 8px 15px;
+        font-size: 1rem;
+    }
+    
+    .exercises-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .about-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .about-member {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .glass-container {
+        padding-top: 100px;
+    }
+    
+    h1 {
+        font-size: 2.2rem;
+    }
+    
+    h2 {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        height: 60px;
+    }
+    
+    .nav-logo {
+        height: 35px;
+    }
+    
+    .nav-brand {
+        font-size: 1.1rem;
+    }
+    
+    .nav-btn {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+    
+    .main-content {
+        padding: 20px;
+    }
+    
+    .member-image {
+        width: 120px;
+        height: 120px;
+    }
+}
+</style>
+</head>
+
+<body>
+    <canvas id="matrix-bg"></canvas>
+    <div class="mouse-focus"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="#" class="nav-left" id="home-link">
+            <img src="Logo.png" alt="Logo" class="nav-logo">
+        </a>
+        <div class="nav-right">
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfIrI6XqLIa4vKBx0SzghMa8nkgfpRSbDmE_fiJzt8CPsdVqA/viewform?usp=publish-editor" class="nav-btn" target="_blank">Fehler Melden</a>
+            <a href="#" class="nav-btn" data-page="about">Über mich</a>
+        </div>
+    </nav>
+
+    <div class="glass-container">
+        <!-- Startseite -->
+        <div class="main-content page active" id="home">
+            <h1>Willkommen zu LearningSite</h1>
+            <p>Hier findest du alle Lernübungen und Materialien zum Lernen.</p>
+            <div id="exercises-list" class="exercises-list">
+                <div class="loading">Lade Lernübungen...</div>
+            </div>
+        </div>
+
+        <!-- Über mich -->
+        <div class="main-content page" id="about">
+            <h1>Über mich</h1>
+            
+            <div class="about-container">
+                <div class="about-member">
+                    <img src="Colin.gif" alt="Colin" class="member-image" onerror="this.src='https://cdn.discordapp.com/avatars/947539945281699920/a_a056f2fcd14b872f4cdfa5da5dcf4887.gif?size=1024'">
+                    <h2>Colin</h2>
+                    <div class="member-role">Developer</div>
+                    <div class="member-age">15 Jahre alt</div>
+                    <p class="member-description">
+                        Ich bin Colin, bin 15 Jahre alt und mein Hobby ist es mich mit Informatik allgemein zu beschäftigen.
+                    </p>
+                    
+                    <div class="skills-section">
+                        <h3 class="skills-title">Programmiersprachen</h3>
+                        <div class="skills-list">
+                            <span class="skill-tag">Python</span>
+                            <span class="skill-tag">HTML</span>
+                            <span class="skill-tag">CSS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-content">
+            © EinsCode. Made by Colin
+        </div>
+    </footer>
+
+    <script>
+        // Navigation
+        const pages = document.querySelectorAll('.page');
+        const navButtons = document.querySelectorAll('.nav-btn[data-page]');
+        const homeLink = document.getElementById('home-link');
+
+        // Navigation zu Seiten
+        navButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                if (button.hasAttribute('target')) return; // Überspringe externe Links
+                e.preventDefault();
+                const targetPage = button.getAttribute('data-page');
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(targetPage).classList.add('active');
+            });
+        });
+
+        // Home Link (Logo und Text)
+        homeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            pages.forEach(page => page.classList.remove('active'));
+            document.getElementById('home').classList.add('active');
+        });
+
+        // Maus-Fokus-Effekt
+        document.addEventListener('mousemove', (e) => {
+            const focus = document.querySelector('.mouse-focus');
+            focus.style.left = e.clientX + 'px';
+            focus.style.top = e.clientY + 'px';
+            focus.style.opacity = '1';
+        });
+
+        // Matrix-Hintergrund
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        const chars = "01";
+        const charArray = chars.split("");
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        
+        for(let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "#77bfff";
+            ctx.font = fontSize + "px monospace";
+            
+            for(let i = 0; i < drops.length; i++) {
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 35);
+
+        // Google Sheets Integration für Lernübungen
+        const sheetUrl = 'https://docs.google.com/spreadsheets/d/1bElv-DzUstXtf5VsdLAXwx4avawkrZl_HO0cxETBXj8/edit?usp=sharing';
+
+        async function loadExercises() {
+            try {
+                const exercisesList = document.getElementById('exercises-list');
+                
+                // Google Sheets ID aus der URL extrahieren
+                const sheetId = sheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)[1];
+                
+                // CSV-Export-URL erstellen
+                const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+                
+                const response = await fetch(csvUrl);
+                const csvText = await response.text();
+                
+                // CSV in Array umwandeln
+                const rows = csvText.split('\n').map(row => {
+                    const result = [];
+                    let current = '';
+                    let inQuotes = false;
+                    
+                    for (let char of row) {
+                        if (char === '"') {
+                            inQuotes = !inQuotes;
+                        } else if (char === ',' && !inQuotes) {
+                            result.push(current);
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    result.push(current);
+                    return result;
+                });
+                
+                // Header-Zeile (Zeile 1) ignorieren und nur Zeilen 2-1000 nehmen
+                const dataRows = rows.slice(1, 1000).filter(row => {
+                    // Nur Zeilen mit Inhalt in Spalte A (Name) nehmen
+                    return row.length >= 3 && row[0] && row[0].trim() !== '';
+                });
+                
+                exercisesList.innerHTML = '';
+                
+                if (dataRows.length === 0) {
+                    exercisesList.innerHTML = '<div class="loading">Keine Lernübungen gefunden.</div>';
+                    return;
+                }
+                
+                dataRows.forEach((exercise) => {
+                    const name = exercise[0] || 'Unbenannte Übung';
+                    const info = exercise[1] || 'Keine Beschreibung verfügbar';
+                    const url = exercise[2] || '#';
+                    const imageUrl = exercise[3] || '';
+                    
+                    // Standard-Bild, falls kein Bild angegeben ist
+                    const defaultImage = 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=225&fit=crop';
+                    
+                    const exerciseItem = document.createElement('a');
+                    exerciseItem.className = 'exercise-item';
+                    exerciseItem.href = url;
+                    exerciseItem.target = '_blank';
+                    
+                    exerciseItem.innerHTML = `
+                        <img src="${imageUrl || defaultImage}" alt="${name}" class="exercise-image" onerror="this.src='${defaultImage}'">
+                        <h3 class="exercise-title">${name}</h3>
+                        <p class="exercise-description">${info}</p>
+                        <div class="exercise-link">Zum Lernmaterial →</div>
+                    `;
+                    
+                    exercisesList.appendChild(exerciseItem);
+                });
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Lernübungen:', error);
+                document.getElementById('exercises-list').innerHTML = '<div class="loading">Fehler beim Laden der Lernübungen. Bitte versuchen Sie es später erneut.</div>';
+            }
+        }
+
+        // Seite initialisieren
+        document.addEventListener('DOMContentLoaded', () => {
+            loadExercises();
+        });
+    </script>
+</body>
+</html>
