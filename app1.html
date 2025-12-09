@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kreisberechnungen - LearningSite</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #000000;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+#matrix-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.mouse-focus {
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(119, 191, 255, 0.15) 0%, rgba(119, 191, 255, 0) 70%);
+    pointer-events: none;
+    z-index: -1;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.glass-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    padding-top: 120px; /* Platz für die feste Navbar */
+    padding-bottom: 80px; /* Platz für den Footer */
+}
+
+.main-content {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 40px;
+    width: 90%;
+    max-width: 1000px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    transition: all 0.5s ease;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+h1 {
+    font-size: 2.8rem;
+    margin-bottom: 20px;
+    color: #77bfff;
+}
+
+h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #77bfff;
+}
+
+h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #77bfff;
+}
+
+p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    color: #e0f7ff;
+}
+
+/* NAVBAR - feste Position oben in der Mitte */
+.navbar {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1000px;
+    height: 70px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.nav-logo {
+    height: 40px;
+    width: auto;
+}
+
+.nav-brand {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #77bfff;
+}
+
+.nav-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.timer-container {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(119, 191, 255, 0.3);
+}
+
+.timer-label {
+    color: #a5d8ff;
+    font-size: 0.9rem;
+}
+
+.timer-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #77bfff;
+    font-family: monospace;
+    min-width: 70px;
+    text-align: center;
+}
+
+.timer-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.timer-btn {
+    background: rgba(119, 191, 255, 0.2);
+    border: none;
+    color: #77bfff;
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.timer-btn:hover {
+    background: rgba(119, 191, 255, 0.3);
+}
+
+.nav-right {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-btn {
+    color: #77bfff;
+    text-decoration: none;
+    font-size: 1.1rem;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: background 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px);
+}
+
+/* Hauptinhalt Layout */
+.content-wrapper {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 30px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+@media (max-width: 900px) {
+    .content-wrapper {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Aufgabenbereich */
+.tasks-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: left;
+}
+
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.task {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 4px solid #77bfff;
+    transition: all 0.3s ease;
+}
+
+.task:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+.task-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.task-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #77bfff;
+    color: #000;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-weight: bold;
+    margin-right: 15px;
+    font-size: 1.1rem;
+}
+
+.task-question {
+    font-weight: 600;
+    color: #e0f7ff;
+    flex: 1;
+    font-size: 1.2rem;
+}
+
+.task-solution {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.solution-input {
+    flex-grow: 1;
+    min-width: 150px;
+    padding: 12px 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(119, 191, 255, 0.3);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1.1rem;
+    transition: border 0.3s;
+}
+
+.solution-input:focus {
+    outline: none;
+    border-color: #77bfff;
+    box-shadow: 0 0 0 2px rgba(119, 191, 255, 0.2);
+}
+
+.solution-btn {
+    background: rgba(119, 191, 255, 0.2);
+    color: #77bfff;
+    border: 1px solid rgba(119, 191, 255, 0.3);
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.solution-btn:hover {
+    background: rgba(119, 191, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.solution-display {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    min-width: 150px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+}
+
+.solution-display.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.correct {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.incorrect {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+/* Taschenrechner */
+.calculator-container {
+    width: 320px;
+}
+
+.calculator-toggle {
+    background: rgba(119, 191, 255, 0.2);
+    color: #77bfff;
+    border: 1px solid rgba(119, 191, 255, 0.3);
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s;
+    margin-bottom: 15px;
+}
+
+.calculator-toggle:hover {
+    background: rgba(119, 191, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.calculator {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid rgba(119, 191, 255, 0.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: none;
+}
+
+.calculator.show {
+    display: block;
+}
+
+.calculator-display {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: right;
+    border: 1px solid rgba(119, 191, 255, 0.2);
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.calculator-history {
+    font-size: 0.9rem;
+    color: #a5d8ff;
+    min-height: 20px;
+    margin-bottom: 5px;
+}
+
+.calculator-result {
+    font-size: 2rem;
+    color: #fff;
+    font-weight: bold;
+    word-break: break-all;
+}
+
+.calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.calc-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(119, 191, 255, 0.2);
+    color: #e0f7ff;
+    padding: 18px 10px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calc-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.calc-btn.operator {
+    background: rgba(119, 191, 255, 0.2);
+    color: #77bfff;
+    font-weight: bold;
+}
+
+.calc-btn.equals {
+    background: rgba(46, 204, 113, 0.3);
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+.calc-btn.clear {
+    background: rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.calc-btn.zero {
+    grid-column: span 2;
+}
+
+.calc-btn.pi {
+    background: rgba(155, 89, 182, 0.3);
+    color: #9b59b6;
+}
+
+/* Formeln und Ergebnisse */
+.formulas-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 30px;
+    margin-top: 30px;
+}
+
+.formula-box {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid #9b59b6;
+}
+
+.formula {
+    font-size: 1.8rem;
+    text-align: center;
+    margin: 15px 0;
+    color: #77bfff;
+    font-weight: bold;
+}
+
+.pi-value {
+    text-align: center;
+    color: #a5d8ff;
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+}
+
+.results-summary {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 25px;
+    margin-top: 30px;
+    text-align: center;
+}
+
+.score-display {
+    font-size: 1.8rem;
+    margin: 20px 0;
+    color: #77bfff;
+}
+
+.results-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.result-btn {
+    background: rgba(119, 191, 255, 0.2);
+    color: #77bfff;
+    border: 1px solid rgba(119, 191, 255, 0.3);
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.result-btn:hover {
+    background: rgba(119, 191, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* FOOTER */
+.footer {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    color: #77bfff;
+    padding: 30px 0;
+    margin-top: 40px;
+    font-size: 0.9rem;
+    z-index: 4;
+}
+
+.footer-content {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 20px;
+    width: 90%;
+    max-width: 1000px;
+    margin: 0 auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar {
+        width: 95%;
+        padding: 0 15px;
+        top: 15px;
+    }
+    
+    .nav-brand {
+        display: block;
+    }
+    
+    .nav-right {
+        gap: 10px;
+    }
+    
+    .nav-btn {
+        padding: 8px 15px;
+        font-size: 1rem;
+    }
+    
+    .timer-container {
+        padding: 6px 15px;
+    }
+    
+    .timer-display {
+        font-size: 1.3rem;
+        min-width: 60px;
+    }
+    
+    .calculator-container {
+        width: 100%;
+    }
+    
+    .calculator-buttons {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .calc-btn {
+        padding: 15px 8px;
+        font-size: 1.1rem;
+    }
+    
+    .glass-container {
+        padding-top: 100px;
+    }
+    
+    h1 {
+        font-size: 2.2rem;
+    }
+    
+    h2 {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        height: 60px;
+        flex-wrap: wrap;
+        height: auto;
+        padding: 10px;
+    }
+    
+    .nav-center {
+        order: 3;
+        flex: 100%;
+        margin-top: 10px;
+    }
+    
+    .nav-logo {
+        height: 35px;
+    }
+    
+    .nav-brand {
+        font-size: 1.1rem;
+    }
+    
+    .nav-btn {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+    
+    .main-content {
+        padding: 20px;
+    }
+    
+    .task-solution {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .solution-input, .solution-btn {
+        width: 100%;
+    }
+    
+    .results-buttons {
+        flex-direction: column;
+    }
+}
+</style>
+</head>
+
+<body>
+    <canvas id="matrix-bg"></canvas>
+    <div class="mouse-focus"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="index.html" class="nav-left">
+            <img src="Logo.png" alt="Logo" class="nav-logo">
+            <div class="nav-brand">LearningSite</div>
+        </a>
+        
+        <div class="nav-center">
+            <div class="timer-container">
+                <div class="timer-label">ZEIT:</div>
+                <div class="timer-display" id="timer">00:00</div>
+                <div class="timer-controls">
+                    <button class="timer-btn" id="timer-start">▶</button>
+                    <button class="timer-btn" id="timer-pause">⏸</button>
+                    <button class="timer-btn" id="timer-reset">↺</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-right">
+            <a href="index.html" class="nav-btn">Zurück</a>
+            <a href="#" class="nav-btn" id="toggle-calc">Taschenrechner</a>
+        </div>
+    </nav>
+
+    <div class="glass-container">
+        <div class="main-content">
+            <h1>Kreisberechnungen</h1>
+            <p>Berechne den Umfang der Kreise. Verwende π ≈ 3,14 und runde auf zwei Dezimalstellen wenn nötig.</p>
+            
+            <div class="content-wrapper">
+                <!-- Aufgabenbereich -->
+                <div class="tasks-container">
+                    <h2>Aufgaben zur Kreisberechnung</h2>
+                    <div class="task-list" id="task-list">
+                        <!-- Aufgaben werden per JavaScript eingefügt -->
+                    </div>
+                    
+                    <div class="results-summary">
+                        <h3>Ergebnisübersicht</h3>
+                        <div class="score-display">
+                            Richtige Lösungen: <span id="correct-count">0</span> von 12
+                        </div>
+                        <div class="results-buttons">
+                            <button class="result-btn" onclick="showAllSolutions()">Alle Lösungen anzeigen</button>
+                            <button class="result-btn" onclick="resetAll()">Alle zurücksetzen</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Taschenrechner -->
+                <div class="calculator-container">
+                    <button class="calculator-toggle" id="calc-toggle">
+                        <span>📱</span> Taschenrechner ein-/ausblenden
+                    </button>
+                    <div class="calculator" id="calculator">
+                        <div class="calculator-display">
+                            <div class="calculator-history" id="calc-history"></div>
+                            <div class="calculator-result" id="calc-result">0</div>
+                        </div>
+                        <div class="calculator-buttons">
+                            <button class="calc-btn clear" data-action="clear">C</button>
+                            <button class="calc-btn clear" data-action="clearEntry">CE</button>
+                            <button class="calc-btn operator" data-action="backspace">⌫</button>
+                            <button class="calc-btn operator" data-action="/">÷</button>
+                            
+                            <button class="calc-btn" data-action="7">7</button>
+                            <button class="calc-btn" data-action="8">8</button>
+                            <button class="calc-btn" data-action="9">9</button>
+                            <button class="calc-btn operator" data-action="*">×</button>
+                            
+                            <button class="calc-btn" data-action="4">4</button>
+                            <button class="calc-btn" data-action="5">5</button>
+                            <button class="calc-btn" data-action="6">6</button>
+                            <button class="calc-btn operator" data-action="-">−</button>
+                            
+                            <button class="calc-btn" data-action="1">1</button>
+                            <button class="calc-btn" data-action="2">2</button>
+                            <button class="calc-btn" data-action="3">3</button>
+                            <button class="calc-btn operator" data-action="+">+</button>
+                            
+                            <button class="calc-btn pi" data-action="pi">π</button>
+                            <button class="calc-btn zero" data-action="0">0</button>
+                            <button class="calc-btn" data-action=".">.</button>
+                            <button class="calc-btn equals" data-action="=">=</button>
+                        </div>
+                    </div>
+                    
+                    <div class="formulas-container">
+                        <h3>Formeln für den Kreisumfang</h3>
+                        <div class="formula-box">
+                            <p>Bei gegebenem <strong>Radius (r)</strong>:</p>
+                            <div class="formula">U = 2 × π × r</div>
+                            <p>Bei gegebenem <strong>Durchmesser (d)</strong>:</p>
+                            <div class="formula">U = π × d</div>
+                        </div>
+                        <div class="pi-value">
+                            <p>π (Pi) ≈ 3,14159</p>
+                            <p>Für diese Aufgaben: π ≈ 3,14</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-content">
+            © EinsCode. Made by Colin
+        </div>
+    </footer>
+
+    <script>
+        // Matrix-Hintergrund
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        const chars = "01";
+        const charArray = chars.split("");
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        
+        for(let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "#77bfff";
+            ctx.font = fontSize + "px monospace";
+            
+            for(let i = 0; i < drops.length; i++) {
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 35);
+
+        // Maus-Fokus-Effekt
+        document.addEventListener('mousemove', (e) => {
+            const focus = document.querySelector('.mouse-focus');
+            focus.style.left = e.clientX + 'px';
+            focus.style.top = e.clientY + 'px';
+            focus.style.opacity = '1';
+        });
+
+        // Stoppuhr
+        let timerSeconds = 0;
+        let timerInterval = null;
+        const timerDisplay = document.getElementById('timer');
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+        
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        
+        function resetTimer() {
+            pauseTimer();
+            timerSeconds = 0;
+            updateTimerDisplay();
+        }
+        
+        document.getElementById('timer-start').addEventListener('click', startTimer);
+        document.getElementById('timer-pause').addEventListener('click', pauseTimer);
+        document.getElementById('timer-reset').addEventListener('click', resetTimer);
+        
+        // Timer automatisch starten
+        startTimer();
+
+        // Taschenrechner
+        const calculator = document.getElementById('calculator');
+        const calcToggle = document.getElementById('calc-toggle');
+        const calcResult = document.getElementById('calc-result');
+        const calcHistory = document.getElementById('calc-history');
+        let currentInput = '0';
+        let previousInput = '';
+        let operation = null;
+        let resetScreen = false;
+        
+        calcToggle.addEventListener('click', () => {
+            calculator.classList.toggle('show');
+        });
+        
+        document.querySelectorAll('.calc-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const action = button.getAttribute('data-action');
+                handleCalculatorInput(action);
+            });
+        });
+        
+        function handleCalculatorInput(value) {
+            // Audio für Tastendruck (optional)
+            playClickSound();
+            
+            if (value >= '0' && value <= '9') {
+                inputNumber(value);
+            } else if (value === '.') {
+                inputDecimal();
+            } else if (value === 'pi') {
+                inputPi();
+            } else if (['+', '-', '*', '/'].includes(value)) {
+                inputOperator(value);
+            } else if (value === '=') {
+                calculateResult();
+            } else if (value === 'clear') {
+                clearCalculator();
+            } else if (value === 'clearEntry') {
+                clearEntry();
+            } else if (value === 'backspace') {
+                backspace();
+            }
+            
+            updateCalculatorDisplay();
+        }
+        
+        function inputNumber(num) {
+            if (currentInput === '0' || resetScreen) {
+                currentInput = num;
+                resetScreen = false;
+            } else {
+                currentInput += num;
+            }
+        }
+        
+        function inputDecimal() {
+            if (resetScreen) {
+                currentInput = '0.';
+                resetScreen = false;
+                return;
+            }
+            
+            if (!currentInput.includes('.')) {
+                currentInput += '.';
+            }
+        }
+        
+        function inputPi() {
+            if (resetScreen) {
+                currentInput = Math.PI.toString();
+                resetScreen = false;
+            } else {
+                currentInput = Math.PI.toString();
+            }
+        }
+        
+        function inputOperator(op) {
+            if (operation !== null) {
+                calculateResult();
+            }
+            previousInput = currentInput;
+            operation = op;
+            resetScreen = true;
+            calcHistory.textContent = `${previousInput} ${getOperatorSymbol(op)}`;
+        }
+        
+        function calculateResult() {
+            if (operation === null || resetScreen) return;
+            
+            let prev = parseFloat(previousInput);
+            let current = parseFloat(currentInput);
+            let result;
+            
+            switch (operation) {
+                case '+': result = prev + current; break;
+                case '-': result = prev - current; break;
+                case '*': result = prev * current; break;
+                case '/': result = prev / current; break;
+                default: return;
+            }
+            
+            // Auf 6 Dezimalstellen runden
+            result = Math.round(result * 1000000) / 1000000;
+            
+            calcHistory.textContent = `${previousInput} ${getOperatorSymbol(operation)} ${currentInput} =`;
+            currentInput = result.toString();
+            operation = null;
+            previousInput = '';
+            resetScreen = true;
+        }
+        
+        function clearCalculator() {
+            currentInput = '0';
+            previousInput = '';
+            operation = null;
+            calcHistory.textContent = '';
+        }
+        
+        function clearEntry() {
+            currentInput = '0';
+        }
+        
+        function backspace() {
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = '0';
+            }
+        }
+        
+        function getOperatorSymbol(op) {
+            switch (op) {
+                case '+': return '+';
+                case '-': return '−';
+                case '*': return '×';
+                case '/': return '÷';
+                default: return op;
+            }
+        }
+        
+        function updateCalculatorDisplay() {
+            calcResult.textContent = currentInput;
+        }
+        
+        function playClickSound() {
+            // Einfacher Klick-Sound
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (e) {
+                // AudioContext nicht verfügbar, ignoriere
+            }
+        }
+
+        // Kreisberechnungen
+        const tasks = [
+            { id: 1, question: "Ein Kreis hat den Radius 4 cm. Berechne den Umfang.", unit: "cm", type: "radius", value: 4 },
+            { id: 2, question: "Der Durchmesser eines Kreises beträgt 12 cm. Bestimme den Umfang.", unit: "cm", type: "diameter", value: 12 },
+            { id: 3, question: "Ein Rad besitzt einen Radius von 15 cm. Wie groß ist der Umfang?", unit: "cm", type: "radius", value: 15 },
+            { id: 4, question: "Ein kleiner Kreis hat einen Durchmesser von 3,6 cm. Berechne den Umfang.", unit: "cm", type: "diameter", value: 3.6 },
+            { id: 5, question: "Bei einem Kreis ist der Radius 0,8 m. Bestimme den Umfang.", unit: "m", type: "radius", value: 0.8 },
+            { id: 6, question: "Ein Brunnenring hat den Durchmesser 2,4 m. Wie lang ist sein Umfang?", unit: "m", type: "diameter", value: 2.4 },
+            { id: 7, question: "Ein Kreis besitzt den Radius 9 mm. Berechne den Umfang.", unit: "mm", type: "radius", value: 9 },
+            { id: 8, question: "Der Durchmesser eines Kreises beträgt 45 mm. Bestimme den Umfang.", unit: "mm", type: "diameter", value: 45 },
+            { id: 9, question: "Ein runder Tisch hat einen Radius von 0,75 m. Berechne den Umfang.", unit: "m", type: "radius", value: 0.75 },
+            { id: 10, question: "Bei einem Kreis ist der Durchmesser 18 cm. Bestimme den Umfang.", unit: "cm", type: "diameter", value: 18 },
+            { id: 11, question: "Ein großes Rad hat einen Radius von 32 cm. Berechne den Umfang.", unit: "cm", type: "radius", value: 32 },
+            { id: 12, question: "Der Radius eines Kreises beträgt 6,2 cm. Finde den Umfang.", unit: "cm", type: "radius", value: 6.2 }
+        ];
+
+        // Lösungen berechnen (π ≈ 3.14)
+        const solutions = tasks.map(task => {
+            const pi = 3.14;
+            if (task.type === "radius") {
+                return Math.round(2 * pi * task.value * 100) / 100;
+            } else { // diameter
+                return Math.round(pi * task.value * 100) / 100;
+            }
+        });
+
+        // Aufgabenliste rendern
+        const taskList = document.getElementById('task-list');
+        
+        tasks.forEach((task, index) => {
+            const taskElement = document.createElement('div');
+            taskElement.className = 'task';
+            taskElement.innerHTML = `
+                <div class="task-header">
+                    <div class="task-number">${task.id}</div>
+                    <div class="task-question">${task.question}</div>
+                </div>
+                <div class="task-solution">
+                    <input type="text" class="solution-input" id="input-${task.id}" placeholder="Lösung in ${task.unit} eingeben">
+                    <button class="solution-btn" onclick="checkSolution(${task.id})">Überprüfen</button>
+                    <div class="solution-display" id="result-${task.id}"></div>
+                </div>
+            `;
+            taskList.appendChild(taskElement);
+        });
+
+        // Audio für richtige/falsche Antworten
+        function playCorrectSound() {
+            // Erstelle einen angenehmen Erfolgston
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+                oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+                
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (e) {
+                // Fallback: einfacher Ton
+                console.log("Richtig!");
+            }
+        }
+        
+        function playIncorrectSound() {
+            // Erstelle einen Fehlerton
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3
+                oscillator.frequency.setValueAtTime(196, audioContext.currentTime + 0.1); // G3
+                
+                oscillator.type = 'sawtooth';
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch (e) {
+                // Fallback
+                console.log("Falsch!");
+            }
+        }
+
+        // Lösungen überprüfen
+        function checkSolution(taskId) {
+            const inputElement = document.getElementById(`input-${taskId}`);
+            const resultElement = document.getElementById(`result-${taskId}`);
+            const userSolution = inputElement.value.trim().replace(',', '.');
+            
+            const taskIndex = taskId - 1;
+            const correctSolution = solutions[taskIndex];
+            
+            // Akzeptiere verschiedene Schreibweisen
+            const userValue = parseFloat(userSolution);
+            const correctValue = parseFloat(correctSolution);
+            
+            // Toleranz für Rundungsfehler
+            const tolerance = 0.01;
+            const isCorrect = !isNaN(userValue) && Math.abs(userValue - correctValue) < tolerance;
+            
+            // Ergebnis anzeigen
+            resultElement.textContent = isCorrect ? `Richtig! ${correctSolution} ${tasks[taskIndex].unit}` : `Falsch. Richtige Lösung: ${correctSolution} ${tasks[taskIndex].unit}`;
+            resultElement.className = `solution-display ${isCorrect ? 'correct' : 'incorrect'} show`;
+            
+            // Sound abspielen
+            if (isCorrect) {
+                playCorrectSound();
+            } else {
+                playIncorrectSound();
+            }
+            
+            // Counter aktualisieren
+            updateScoreCounter();
+        }
+
+        // Punktestand aktualisieren
+        function updateScoreCounter() {
+            let correctCount = 0;
+            
+            for (let i = 1; i <= 12; i++) {
+                const resultElement = document.getElementById(`result-${i}`);
+                if (resultElement.classList.contains('correct')) {
+                    correctCount++;
+                }
+            }
+            
+            document.getElementById('correct-count').textContent = correctCount;
+        }
+
+        // Alle Lösungen anzeigen
+        function showAllSolutions() {
+            tasks.forEach((task, index) => {
+                const inputElement = document.getElementById(`input-${task.id}`);
+                const resultElement = document.getElementById(`result-${task.id}`);
+                
+                inputElement.value = solutions[index];
+                resultElement.textContent = `Richtig! ${solutions[index]} ${task.unit}`;
+                resultElement.className = 'solution-display correct show';
+            });
+            
+            updateScoreCounter();
+            playCorrectSound();
+        }
+
+        // Alle zurücksetzen
+        function resetAll() {
+            tasks.forEach(task => {
+                const inputElement = document.getElementById(`input-${task.id}`);
+                const resultElement = document.getElementById(`result-${task.id}`);
+                
+                inputElement.value = '';
+                resultElement.textContent = '';
+                resultElement.className = 'solution-display';
+            });
+            
+            updateScoreCounter();
+        }
+
+        // Enter-Taste für Eingabefelder
+        document.addEventListener('DOMContentLoaded', () => {
+            for (let i = 1; i <= 12; i++) {
+                const inputElement = document.getElementById(`input-${i}`);
+                inputElement.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        checkSolution(i);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
